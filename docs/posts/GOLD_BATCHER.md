@@ -160,7 +160,7 @@ clusterized = gold_clusterizer.cluster_in_dataset(
 
 The main entry point in the code is [GoldClusterizedBatchSampler](https://github.com/goldener-data/goldener/blob/main/goldener/organize.py)
 
-In [Goldener](https://github.com/goldener-data/goldener), In Goldener, smart batching is implemented as a custom batch sampler (sampler returning the list of index per batch) based on:
+In [Goldener](https://github.com/goldener-data/goldener), smart batching is implemented as a custom batch sampler (sampler returning the list of index per batch) based on:
 * Vectors characterizing the samples/elements from both local and global semantics.
 * A clustering algorithm relying on vectors to gather together samples sharing the same distribution of features.
 
