@@ -146,7 +146,7 @@ gold_selector = GoldSelector(
     selection_tool=selection_tool,
     selection_key="selected",
     label_key="label",
-    vectorized_key="vectorized",
+    vectorized_key="embeddings",
 )
 selection_table = gold_selector.select_in_table(
     description_table, select_size=100, value="training"
