@@ -159,6 +159,48 @@ for cluster_id in range(10):
 
 ```
 
+## Reducing dimensionality
+
+Before clustering or visualizing embeddings, it's often useful to reduce their dimensionality.
+Goldener wraps both scikit-learn-style reducers (PCA, UMAP, TSNE, GaussianRandomProjection) and
+any fitted `torch.nn.Module`, so either kind of reducer works with the same interface.
+
+```python
+import torch
+from sklearn.decomposition import PCA
+from goldener import GoldSKLearnReductionTool
+
+# 50 embeddings of dimension 16
+x = torch.randn(50, 16)
+
+reducer = GoldSKLearnReductionTool(PCA(n_components=2))
+x_reduced = reducer.fit_transform(x)
+
+print(x_reduced.shape)  # torch.Size([50, 2])
+```
+
+`fit()` and `transform()` are also available separately, so you can fit once and reuse the reducer
+on new data:
+
+```python
+reducer = GoldSKLearnReductionTool(PCA(n_components=2))
+reducer.fit(x)
+x_transformed = reducer.transform(x)
+```
+
+To reduce with a torch model instead (e.g. a learned projection head), wrap it with
+`GoldTorchModuleReductionTool`:
+
+```python
+from goldener import GoldTorchModuleReductionTool
+
+linear_reducer = torch.nn.Linear(16, 3)
+tool = GoldTorchModuleReductionTool(reducer=linear_reducer)
+x_out = tool.transform(x)
+
+print(x_out.shape)  # torch.Size([50, 3])
+```
+
 # Installation
 
 Installing Goldener is as simple as running the following command:
