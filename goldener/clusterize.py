@@ -165,7 +165,7 @@ def get_random_chunk_assignment(
 
 
 class GoldSKLearnClusteringTool(GoldClusteringTool):
-    """Chunk data randomly into clusters of almost equal size."""
+    """Cluster data using a wrapped scikit-learn clustering estimator."""
 
     def __init__(self, tool: ClusterMixin) -> None:
         if not hasattr(tool, "predict"):
