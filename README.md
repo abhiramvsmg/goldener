@@ -159,6 +159,22 @@ for cluster_id in range(10):
 
 ```
 
+## Reducing dimensionality
+
+Depending on the dataset (size, data type, task), the computation tackled by Goldener can be quite resource intensive and time consuming. The dimensionality reduction aims to reduce the memory footprint and increase the speed for the downstream task. It can be quite useful to adapt the computation to the hardware constraints or access results in time constrained situation.
+
+```python
+import torch
+from sklearn.decomposition import PCA
+from goldener import GoldSKLearnReductionTool
+
+# 50 embeddings of dimension 16
+x = torch.randn(50, 16)
+
+reducer = GoldSKLearnReductionTool(PCA(n_components=2))
+x_reduced = reducer.fit_transform(x)  # shape: (50, 2)
+```
+
 # Installation
 
 Installing Goldener is as simple as running the following command:
