@@ -161,19 +161,18 @@ for cluster_id in range(10):
 
 ## Reducing dimensionality
 
-Before clustering or visualizing embeddings, it's often useful to reduce their dimensionality.
-Goldener wraps common reducers like PCA, UMAP, and TSNE (or any fitted `torch.nn.Module`) behind
-the same simple interface.
+Depending on the dataset (size, data type, task), the computation tackled by Goldener can be quite resource intensive and time consuming. The dimensionality reduction aims to reduce the memory footprint and increase the speed for the downstream task. It can be quite useful to adapt the computation to the hardware constraints or access results in time constrained situation.
 
 ```python
 import torch
 from sklearn.decomposition import PCA
 from goldener import GoldSKLearnReductionTool
 
-embeddings = torch.randn(50, 16)  # 50 embeddings of dimension 16
+# 50 embeddings of dimension 16
+x = torch.randn(50, 16)
 
 reducer = GoldSKLearnReductionTool(PCA(n_components=2))
-reduced = reducer.fit_transform(embeddings)
+x_reduced = reducer.fit_transform(x)  # shape: (50, 2)
 ```
 
 # Installation
