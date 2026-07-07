@@ -85,7 +85,8 @@ In this post, we introduce how [Goldener](https://github.com/goldener-data/golde
 [Goldener](https://github.com/goldener-data/goldener) is designed to process datasets of any size:
 * For most datasets and tasks, it is likely not possible to keep all the data in RAM/VRAM memory at the same time.
 * Machine preemption might happen during a task. It is likely to stop the task and then come back to finish it.
-* Multiple steps in the ML lifecycle might require leveraging embeddings/features, it is likely to reuse the same semantic representation multiple times.
+* Multiple steps in the ML lifecycle might require leveraging embeddings/features. It is likely that the same semantic representation is reused multiple times.
+
 These assumptions enforce the usage of an internal data storage in Goldener. To manage this internal storage, Goldener uses [Pixeltable](https://www.pixeltable.com/). With this open source Python library, Goldener locally saves its output but also the different objects required to run/restart a task.
 
 With Pixeltable, all the objects are stored in a `Table` in which the columns can have different types, from simple text to tensors, dictionaries of variables, and links to cloud storage. In this `Table`, Pixeltable is enforcing new entry types and keeping track of data lineage information. It is also possible to convert the `Table` to a PyTorch `Dataset` and to store the created `Table` in a dedicated cloud storage. The ability to save different inputs, outputs, and intermediate objects makes [Goldener](https://github.com/goldener-data/goldener) fully task agnostic, with the ability to process text, image, video, or any other data type.
@@ -177,6 +178,7 @@ Multiple algorithms exist to select some data based on the `Description` (vector
 * `GoldGreedyKernelPointsSelectionTool` based on the `GreedyKernelPoints` class from [Coreax](https://coreax.readthedocs.io/en/latest/index.html)
 * `GoldGreedyKCenterSelectionTool` based on an internal reimplementation of the Greedy K-Center algorithm
 * `GoldZCoreSelectionTool` based on an internal reimplementation of the ZCore method
+
 `GoldSelectionTool` assumes that all the data to select from fits in memory (RAM or VRAM). Those selection tools take the vectorized data as input and return a list of integers specifying which vectors have been selected.
 
 In [Goldener](https://github.com/goldener-data/goldener), the `GoldSelector` class orchestrates the selection of samples from a `GoldSelectionTool`. In `GoldSelector`, the internal selection `Table` is created and partly populated (all columns except the selection one) before applying any selection algorithm. Then, the selection process is stratified between the classes when the `label_key` is provided. When all the vectors cannot be processed at once, the user can specify a chunk size to split the selection process in multiple smaller chunks of data. The assignment of the vectors to a given chunk is done randomly. Additionally, when the memory constraints are very restrictive, `GoldSelector` can integrate a `GoldReductionTool` in order to reduce the dimensions of the vectors. The available reduction tools are UMAP, PCA, t-SNE, and GaussianRandomProjection. An interface to use any PyTorch module as `GoldReductionTool` is also available.
@@ -205,16 +207,17 @@ selection_table = gold_selector.select_in_table(my_dataset, 0.5, "train")
 
 ## 3. Smart split
 
-The main entry point in the code is [GoldSplitter](https://github.com/goldener-data/goldener/blob/main/goldener/split.py)
+The main entry point in the code is [GoldSplitter](https://github.com/goldener-data/goldener/blob/main/goldener/split.py).
 
 In [Goldener](https://github.com/goldener-data/goldener), a smart split is defined as a split based on:
 * Vectors characterizing the samples/elements from both local and global semantics.
 * A selection algorithm relying on vectors to gather together different samples based on their relative difference/distribution.
+
 As opposed to a random split relying on randomness to split the data, a smart split makes the split more coherent with the target. This coherence is driven by the selection algorithm.
 
 In [Goldener](https://github.com/goldener-data/goldener), the vectors characterizing the data can be obtained from a `GoldDescriptor` object and the selection of the samples per split from a `GoldSelector` class. The `GoldSplitter` class unifies these two objects in order to orchestrate the split on the data with one call. Its initialization requires the specification of the sets across which the data is split. This specification must ensure that the full dataset is split among the different sets. The population for each set can be a ratio or specified count. All sets must follow the same way to specify their target population.
 
-In [Goldener](https://github.com/goldener-data/goldener), the `GoldSplitter` is callable from either a PyTorch `Dataset` or a Pixeltable `Table`. If a dataset is provided, each sample is expected to be accessible as a dictionary aligned with the descriptor requirements (if it is not initially in this format, a custom collate function must be provided). The input data is processed sequentially by the descriptor and then the selector is called sequentially for each of the specified sets (a sample already selected for a previous set is no longer accessible). At the end of its task, the GoldSplitter returns a PyTorch `Dataset` via `split_in_dataset` or a Pixeltable `Table` via `split_in_table`. The set affiliation status is stored within the selection column defined by the selector.
+In [Goldener](https://github.com/goldener-data/goldener), the `GoldSplitter` is callable from either a PyTorch `Dataset` or a Pixeltable `Table`. If a dataset is provided, each sample is expected to be accessible as a dictionary aligned with the descriptor requirements (if it is not initially in this format, a custom collate function must be provided). The input data is processed sequentially by the descriptor and then the selector is called sequentially for each of the specified sets (a sample already selected for a previous set is no longer accessible). At the end of its task, the `GoldSplitter` returns a PyTorch `Dataset` via `split_in_dataset` or a Pixeltable `Table` via `split_in_table`. The set affiliation status is stored within the selection column defined by the selector.
 
  ```python
 gold_descriptor = GoldDescriptor(...) # descriptor with vectorizer included
