@@ -1,4 +1,4 @@
-from typing import Callable, Any, TypeVar
+from typing import Callable, Any, Iterator, TypeVar
 
 import numpy as np
 import torch
@@ -130,7 +130,8 @@ class ResetableTorchIterableDataset(torch.utils.data.IterableDataset):
 
     Attributes:
         data_iterable: The underlying iterable dataset.
-        _data_iterator: The current iterator over the dataset.
+        _data_iterator: The current iterator over the dataset, or None once it
+            has been exhausted (see `__next__`) and not yet re-created.
     """
 
     def __init__(self, data_iterable: torch.utils.data.IterableDataset):
@@ -141,7 +142,7 @@ class ResetableTorchIterableDataset(torch.utils.data.IterableDataset):
         """
         super().__init__()
         self.data_iterable = data_iterable
-        self._data_iterator = iter(self.data_iterable)
+        self._data_iterator: Iterator[Any] | None = iter(self.data_iterable)
 
     def __iter__(self):
         """Return the iterator object."""
@@ -151,6 +152,10 @@ class ResetableTorchIterableDataset(torch.utils.data.IterableDataset):
 
     def __next__(self):
         """Return the next item from the iterator."""
+        # __iter__ always runs before __next__ in the iterator protocol and
+        # re-creates _data_iterator if it was exhausted, so it is never None
+        # here at runtime; the assert documents that invariant for mypy.
+        assert self._data_iterator is not None
         try:
             return next(self._data_iterator)
         except StopIteration:
