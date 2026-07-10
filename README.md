@@ -181,14 +181,16 @@ When training with randomly sampled batches, the content distribution within eac
 some batches may end up overrepresenting certain types of data while barely including others. This imbalance 
 can hurt how well a model learns to recognize the underrepresented cases.
 
-Goldener's `GoldClusterizedBatchSampler` solves this by first clustering the data into groups of similar 
-content, then forcing every batch to include at least one sample from each cluster — ensuring balanced, 
-representative batches throughout training.
+Goldener's `GoldClusterizedBatchSampler` solves this by first clustering the data into groups of similar
+content, then drawing samples so each batch is spread across clusters as evenly as possible; when `n_clusters`
+is larger than `batch_size`, only a subset of clusters can appear in a given batch.
 
 ```python
 from goldener.organize import GoldClusterizedBatchSampler
-from goldener import GoldClusterizer, GoldSKLearnClusteringTool
+from goldener import GoldClusterizer, GoldDescriptor, GoldSKLearnClusteringTool
 from sklearn.cluster import KMeans
+
+gd = GoldDescriptor(...)  # reuse the descriptor used for smart sampling
 
 clusterizer = GoldClusterizer(
     table_path="my_table_for_clusterization",
@@ -197,9 +199,10 @@ clusterizer = GoldClusterizer(
 )
 
 batch_sampler = GoldClusterizedBatchSampler(
-    dataset=my_dataset,  # must already be vectorized unless descriptor/vectorizer are provided
+    dataset=my_dataset,
     batch_size=32,
     clusterizer=clusterizer,
+    descriptor=gd,
     n_clusters=10,
 )
 ```
