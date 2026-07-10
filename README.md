@@ -186,7 +186,8 @@ content, then forcing every batch to include at least one sample from each clust
 representative batches throughout training.
 
 ```python
-from goldener import GoldClusterizedBatchSampler, GoldClusterizer, GoldSKLearnClusteringTool
+from goldener.organize import GoldClusterizedBatchSampler
+from goldener import GoldClusterizer, GoldSKLearnClusteringTool
 from sklearn.cluster import KMeans
 
 clusterizer = GoldClusterizer(
