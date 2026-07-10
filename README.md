@@ -159,6 +159,35 @@ for cluster_id in range(10):
 
 ```
 
+## Balancing batches during training
+
+When training with randomly sampled batches, the content distribution within each batch can vary a lot -
+some batches may end up overrepresenting certain types of data while barely including others. This imbalance
+can hurt how well a model learns to recognize the underrepresented cases.
+
+Goldener's `GoldClusterizedBatchSampler` solves this by first clustering the data into groups of similar
+content, then forcing every batch to include at least one sample from each cluster - ensuring balanced,
+representative batches throughout training.
+
+```python
+from goldener.organize import GoldClusterizedBatchSampler
+from goldener import GoldClusterizer, GoldSKLearnClusteringTool
+from sklearn.cluster import KMeans
+
+clusterizer = GoldClusterizer(
+    table_path="my_table_for_clusterization",
+    clustering_tool=GoldSKLearnClusteringTool(KMeans(n_clusters=10)),
+    cluster_key="cluster",
+)
+
+batch_sampler = GoldClusterizedBatchSampler(
+    dataset=my_dataset,
+    batch_size=32,
+    clusterizer=clusterizer,
+    n_clusters=10,
+)
+```
+
 ## Reducing dimensionality
 
 Depending on the dataset (size, data type, task), the computation tackled by Goldener can be quite resource intensive and time consuming. The dimensionality reduction aims to reduce the memory footprint and increase the speed for the downstream task. It can be quite useful to adapt the computation to the hardware constraints or access results in time constrained situation.
