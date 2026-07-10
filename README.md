@@ -196,9 +196,10 @@ clusterizer = GoldClusterizer(
 )
 
 batch_sampler = GoldClusterizedBatchSampler(
-    dataset=my_dataset,
+    dataset=my_dataset,  # must already be vectorized unless descriptor/vectorizer are provided
     batch_size=32,
     clusterizer=clusterizer,
+    n_clusters=10,
 )
 ```
 
